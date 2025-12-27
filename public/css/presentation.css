@@ -196,21 +196,156 @@ html, body {
   opacity: 0;
   visibility: hidden;
   transform: scale(0.95);
-  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .slide.active {
   opacity: 1;
   visibility: visible;
+  transform: scale(1) translateX(0) translateY(0) rotate(0deg);
+}
+
+/* Default exit state */
+.slide.exit {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* ============================================
+   ROMANTIC TRANSITIONS
+   ============================================ */
+
+/* 1. Fade with Scale (Dreamy) */
+.transition-fade-scale .slide.exit {
+  opacity: 0;
+  transform: scale(1.1);
+}
+.transition-fade-scale .slide:not(.active):not(.exit) {
+  transform: scale(0.9);
+}
+
+/* 2. Slide Left (Classic) */
+.transition-slide-left .slide.exit {
+  transform: translateX(-100%);
+  opacity: 0;
+}
+.transition-slide-left .slide:not(.active):not(.exit) {
+  transform: translateX(100%);
+}
+
+/* 3. Slide Up (Rising Love) */
+.transition-slide-up .slide.exit {
+  transform: translateY(-100%);
+  opacity: 0;
+}
+.transition-slide-up .slide:not(.active):not(.exit) {
+  transform: translateY(100%);
+}
+
+/* 4. Zoom In (Heartbeat) */
+.transition-zoom .slide.exit {
+  transform: scale(0.5);
+  opacity: 0;
+}
+.transition-zoom .slide:not(.active):not(.exit) {
+  transform: scale(1.5);
+  opacity: 0;
+}
+
+/* 5. Rotate Fade (Waltz) */
+.transition-rotate .slide.exit {
+  transform: rotate(-5deg) scale(0.9);
+  opacity: 0;
+}
+.transition-rotate .slide:not(.active):not(.exit) {
+  transform: rotate(5deg) scale(0.9);
+  opacity: 0;
+}
+
+/* 6. Blur Fade (Soft Focus) */
+.transition-blur .slide {
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1), filter 0.8s ease;
+}
+.transition-blur .slide.exit {
+  opacity: 0;
+  filter: blur(20px);
+  transform: scale(1.05);
+}
+.transition-blur .slide:not(.active):not(.exit) {
+  filter: blur(20px);
+  opacity: 0;
+}
+.transition-blur .slide.active {
+  filter: blur(0);
+}
+
+/* 7. Flip (Page Turn) */
+.transition-flip .slide {
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+}
+.transition-flip .slide.exit {
+  transform: rotateY(-90deg);
+  opacity: 0;
+}
+.transition-flip .slide:not(.active):not(.exit) {
+  transform: rotateY(90deg);
+  opacity: 0;
+}
+
+/* 8. Cross Fade (Gentle) */
+.transition-crossfade .slide.exit {
+  opacity: 0;
+  transform: scale(1);
+}
+.transition-crossfade .slide:not(.active):not(.exit) {
+  opacity: 0;
   transform: scale(1);
 }
 
-.slide.prev {
-  transform: translateX(-100%) scale(0.9);
+/* 9. Slide Diagonal (Playful) */
+.transition-diagonal .slide.exit {
+  transform: translate(-50%, -50%);
+  opacity: 0;
+}
+.transition-diagonal .slide:not(.active):not(.exit) {
+  transform: translate(50%, 50%);
+  opacity: 0;
 }
 
-.slide.next {
-  transform: translateX(100%) scale(0.9);
+/* 10. Expand (Heart Growing) */
+.transition-expand .slide.exit {
+  transform: scale(0);
+  opacity: 0;
+  border-radius: 50%;
+}
+.transition-expand .slide:not(.active):not(.exit) {
+  transform: scale(0);
+  opacity: 0;
+}
+
+/* 11. Curtain (Reveal) */
+.transition-curtain .slide {
+  clip-path: inset(0 0 0 0);
+  transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.transition-curtain .slide.exit {
+  clip-path: inset(0 100% 0 0);
+  opacity: 1;
+}
+.transition-curtain .slide:not(.active):not(.exit) {
+  clip-path: inset(0 0 0 100%);
+}
+
+/* 12. Float Up (Ascending) */
+.transition-float .slide.exit {
+  transform: translateY(-30px) scale(0.95);
+  opacity: 0;
+}
+.transition-float .slide:not(.active):not(.exit) {
+  transform: translateY(30px) scale(0.95);
+  opacity: 0;
 }
 
 /* Gradient Backgrounds */
@@ -469,6 +604,7 @@ html, body {
   animation: fadeInUp 1s ease forwards;
   animation-delay: 1s;
   opacity: 0;
+  transition: opacity 0.5s ease;
 }
 
 @keyframes fadeInUp {
@@ -480,6 +616,7 @@ html, body {
 .tap-hint, .key-hint {
   font-size: 13px;
   color: rgba(255, 255, 255, 0.6);
+  text-align: center;
 }
 
 .key-hint {

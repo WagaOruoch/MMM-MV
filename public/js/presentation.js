@@ -5,9 +5,29 @@ let slides = [];
 let currentSlideIndex = 0;
 let settings = {};
 let isMusicPlaying = false;
-let musicStarted = false; // Track if music has been started on first interaction
+let musicStarted = false;
 let touchStartX = 0;
 let touchEndX = 0;
+let autoAdvanceTimer = null;
+let autoAdvanceDelay = 6000; // 6 seconds per slide
+
+// Romantic transition types
+const romanticTransitions = [
+  'fade-scale',    // Dreamy fade with scale
+  'slide-left',    // Classic slide
+  'slide-up',      // Rising love
+  'zoom',          // Heartbeat zoom
+  'rotate',        // Waltz rotation
+  'blur',          // Soft focus
+  'flip',          // Page turn
+  'crossfade',     // Gentle crossfade
+  'diagonal',      // Playful diagonal
+  'expand',        // Heart growing
+  'curtain',       // Reveal curtain
+  'float'          // Ascending float
+];
+
+let currentTransition = romanticTransitions[0];
 
 // DOM Elements
 const loadingScreen = document.getElementById('loadingScreen');
@@ -37,11 +57,15 @@ async function init() {
   renderSlides();
   setupEventListeners();
   setupMusic();
+  setRandomTransition();
   
-  // Hide loading screen
+  // Hide loading screen and start auto-advance
   setTimeout(() => {
     loadingScreen.classList.add('hide');
     updateProgress();
+    startAutoAdvance();
+    // Auto-start music when presentation begins
+    tryStartMusic();
   }, 1500);
 }
 
@@ -178,6 +202,7 @@ function generateSlideHTML(slide, index, activeClass) {
 
 function setupEventListeners() {
   // Click/tap to advance
+  // Click/tap to advance (optional manual control)
   presentationContainer.addEventListener('click', handleTap);
   
   // Touch events for swipe
@@ -188,7 +213,18 @@ function setupEventListeners() {
   document.addEventListener('keydown', handleKeydown);
   
   // Music toggle
-  musicToggle.addEventListener('click', toggleMusic);
+  musicToggle.addEventListener('click', handleMusicToggleClick);
+  
+  // Hide nav hint after a few seconds
+  setTimeout(() => {
+    navHint.style.opacity = '0';
+    setTimeout(() => { navHint.style.display = 'none'; }, 500);
+  }, 4000);
+}
+
+function handleMusicToggleClick(e) {
+  e.stopPropagation(); // Don't trigger slide advance
+  toggleMusic();
 }
 
 function handleTap(e) {
@@ -206,12 +242,11 @@ function handleTap(e) {
   
   if (tapX < screenWidth * 0.3) {
     prevSlide();
+    resetAutoAdvance();
   } else {
     nextSlide();
+    resetAutoAdvance();
   }
-
-  // Hide nav hint after first interaction
-  navHint.style.display = 'none';
 }
 
 function handleTouchStart(e) {
@@ -233,10 +268,11 @@ function handleSwipe() {
     
     if (diff > 0) {
       nextSlide();
+      resetAutoAdvance();
     } else {
       prevSlide();
+      resetAutoAdvance();
     }
-    navHint.style.display = 'none';
   }
 }
 
@@ -249,18 +285,22 @@ function handleKeydown(e) {
     case ' ':
       e.preventDefault();
       nextSlide();
+      resetAutoAdvance();
       break;
     case 'ArrowLeft':
       e.preventDefault();
       prevSlide();
+      resetAutoAdvance();
       break;
   }
-  navHint.style.display = 'none';
 }
 
 function nextSlide() {
   if (currentSlideIndex < slides.length - 1) {
     goToSlide(currentSlideIndex + 1);
+  } else {
+    // Stop auto-advance at the end
+    stopAutoAdvance();
   }
 }
 
@@ -273,45 +313,80 @@ function prevSlide() {
 function goToSlide(index) {
   const slideElements = document.querySelectorAll('.slide');
   
-  // Remove active class from current slide
-  slideElements[currentSlideIndex].classList.remove('active');
+  // Set a new random transition for this slide change
+  setRandomTransition();
   
-  // Add transition classes
-  if (index > currentSlideIndex) {
-    slideElements[currentSlideIndex].classList.add('prev');
-  } else {
-    slideElements[currentSlideIndex].classList.add('next');
-  }
+  // Remove active and add exit class to current slide
+  slideElements[currentSlideIndex].classList.remove('active');
+  slideElements[currentSlideIndex].classList.add('exit');
 
   // Update index
   currentSlideIndex = index;
 
   // Add active class to new slide
-  slideElements[currentSlideIndex].classList.remove('prev', 'next');
+  slideElements[currentSlideIndex].classList.remove('exit');
   slideElements[currentSlideIndex].classList.add('active');
 
   // Update progress
   updateProgress();
 
-  // Check for closing slide (confetti)
+  // Check for closing slide (confetti and stop auto-advance)
   const currentSlide = slideElements[currentSlideIndex];
   if (currentSlide.dataset.closing === 'true') {
     setTimeout(triggerConfetti, 500);
+    stopAutoAdvance();
   }
 
-  // Clean up transition classes after animation
+  // Clean up exit classes after animation
   setTimeout(() => {
     slideElements.forEach((slide, i) => {
       if (i !== currentSlideIndex) {
-        slide.classList.remove('prev', 'next');
+        slide.classList.remove('exit');
       }
     });
-  }, 600);
+  }, 900);
 }
 
 function updateProgress() {
   const progress = ((currentSlideIndex + 1) / slides.length) * 100;
   progressBar.style.width = `${progress}%`;
+}
+
+// Auto-advance Functions
+function startAutoAdvance() {
+  stopAutoAdvance(); // Clear any existing timer
+  autoAdvanceTimer = setInterval(() => {
+    nextSlide();
+  }, autoAdvanceDelay);
+}
+
+function stopAutoAdvance() {
+  if (autoAdvanceTimer) {
+    clearInterval(autoAdvanceTimer);
+    autoAdvanceTimer = null;
+  }
+}
+
+function resetAutoAdvance() {
+  // Reset timer when user manually navigates
+  if (autoAdvanceTimer) {
+    startAutoAdvance();
+  }
+}
+
+// Transition Functions
+function setRandomTransition() {
+  // Remove previous transition class
+  presentationContainer.classList.forEach(cls => {
+    if (cls.startsWith('transition-')) {
+      presentationContainer.classList.remove(cls);
+    }
+  });
+  
+  // Pick a random transition
+  const randomIndex = Math.floor(Math.random() * romanticTransitions.length);
+  currentTransition = romanticTransitions[randomIndex];
+  presentationContainer.classList.add(`transition-${currentTransition}`);
 }
 
 // Music Functions
