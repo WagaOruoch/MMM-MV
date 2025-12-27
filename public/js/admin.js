@@ -438,8 +438,8 @@ async function handleImageSelect(e) {
 }
 
 async function processImage(file) {
-  if (file.size > 5 * 1024 * 1024) {
-    showToast('Image must be less than 5MB', 'error');
+  if (file.size > 12 * 1024 * 1024) {
+    showToast('Image must be less than 12MB', 'error');
     return;
   }
 
