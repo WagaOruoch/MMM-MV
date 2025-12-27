@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - Monthversary Wrapped</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-left">
+      <h1>💕 Monthversary Wrapped</h1>
+    </div>
+    <div class="header-right">
+      <a href="/preview" target="_blank" class="btn btn-secondary">
+        <span class="icon">👁️</span> Preview
+      </a>
+      <button class="btn btn-primary" id="publishAllBtn">
+        <span class="icon">🚀</span> Publish All
+      </button>
+      <button class="btn btn-danger" id="logoutBtn">
+        <span class="icon">🚪</span> Logout
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-section">
+        <h3>Add New Slide</h3>
+        <div class="slide-type-buttons">
+          <button class="slide-type-btn" data-type="cover">
+            <span class="icon">🎬</span>
+            <span>Cover</span>
+          </button>
+          <button class="slide-type-btn" data-type="photo">
+            <span class="icon">📷</span>
+            <span>Photo</span>
+          </button>
+          <button class="slide-type-btn" data-type="stat">
+            <span class="icon">📊</span>
+            <span>Stats</span>
+          </button>
+          <button class="slide-type-btn" data-type="quote">
+            <span class="icon">💬</span>
+            <span>Quote</span>
+          </button>
+          <button class="slide-type-btn" data-type="message">
+            <span class="icon">💌</span>
+            <span>Message</span>
+          </button>
+          <button class="slide-type-btn" data-type="closing">
+            <span class="icon">💖</span>
+            <span>Closing</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <h3>Settings</h3>
+        <div class="settings-form">
+          <div class="form-group">
+            <label for="siteTitle">Site Title</label>
+            <input type="text" id="siteTitle" placeholder="Our Monthversary">
+          </div>
+          <div class="form-group">
+            <label for="bgMusic">Background Music</label>
+            <input type="file" id="bgMusic" accept="audio/*">
+            <div class="audio-preview" id="audioPreview" style="display: none;">
+              <audio controls id="audioPlayer"></audio>
+              <button class="btn btn-sm btn-danger" id="removeAudio">Remove</button>
+            </div>
+          </div>
+          <div class="form-group checkbox-group">
+            <input type="checkbox" id="musicEnabled">
+            <label for="musicEnabled">Enable Background Music</label>
+          </div>
+          <button class="btn btn-primary btn-full" id="saveSettings">Save Settings</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Slides List -->
+    <section class="slides-container">
+      <div class="slides-header">
+        <h2>Slides</h2>
+        <span class="slide-count" id="slideCount">0 slides</span>
+      </div>
+      <div class="slides-list" id="slidesList">
+        <!-- Slides will be rendered here -->
+      </div>
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">📝</div>
+        <h3>No slides yet</h3>
+        <p>Click on a slide type to add your first slide</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- Slide Editor Modal -->
+  <div class="modal-overlay" id="slideModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modalTitle">Edit Slide</h2>
+        <button class="modal-close" id="modalClose">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="slideForm">
+          <input type="hidden" id="slideId">
+          <input type="hidden" id="slideType">
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="slideTitle">Title</label>
+              <input type="text" id="slideTitle" placeholder="Enter title">
+            </div>
+            <div class="form-group">
+              <label for="slideSubtitle">Subtitle</label>
+              <input type="text" id="slideSubtitle" placeholder="Enter subtitle">
+            </div>
+          </div>
+
+          <div class="form-group" id="contentGroup">
+            <label for="slideContent">Content</label>
+            <textarea id="slideContent" rows="4" placeholder="Enter content"></textarea>
+          </div>
+
+          <div class="form-group" id="imageGroup">
+            <label>Image</label>
+            <div class="image-upload-area" id="imageUploadArea">
+              <input type="file" id="slideImage" accept="image/*" hidden>
+              <div class="upload-placeholder" id="uploadPlaceholder">
+                <span class="upload-icon">📁</span>
+                <p>Click or drag image here</p>
+                <p class="upload-hint">Max 5MB, JPEG/PNG</p>
+              </div>
+              <div class="image-preview" id="imagePreview" style="display: none;">
+                <img id="previewImg" src="" alt="Preview">
+                <button type="button" class="remove-image-btn" id="removeImage">&times;</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group" id="statsGroup" style="display: none;">
+            <label>Stats</label>
+            <div class="stats-container" id="statsContainer">
+              <!-- Stats will be added here -->
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm" id="addStatBtn">+ Add Stat</button>
+          </div>
+
+          <div class="form-group">
+            <label for="backgroundColor">Background Style</label>
+            <div class="color-picker">
+              <button type="button" class="color-option gradient-1 active" data-color="gradient-1"></button>
+              <button type="button" class="color-option gradient-2" data-color="gradient-2"></button>
+              <button type="button" class="color-option gradient-3" data-color="gradient-3"></button>
+              <button type="button" class="color-option gradient-4" data-color="gradient-4"></button>
+              <button type="button" class="color-option gradient-5" data-color="gradient-5"></button>
+              <button type="button" class="color-option gradient-6" data-color="gradient-6"></button>
+            </div>
+            <input type="hidden" id="backgroundColor" value="gradient-1">
+          </div>
+
+          <div class="form-group checkbox-group">
+            <input type="checkbox" id="isPublished">
+            <label for="isPublished">Publish this slide</label>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="cancelBtn">Cancel</button>
+        <button class="btn btn-primary" id="saveSlideBtn">Save Slide</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Confirmation Modal -->
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <h2>Confirm Delete</h2>
+        <button class="modal-close" id="confirmModalClose">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete this slide? This action cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="confirmCancelBtn">Cancel</button>
+        <button class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast">
+    <span class="toast-icon" id="toastIcon">✓</span>
+    <span class="toast-message" id="toastMessage">Success!</span>
+  </div>
+
+  <script src="/js/admin.js"></script>
+</body>
+</html>

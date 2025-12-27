@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Monthversary Wrapped</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/presentation.css">
+</head>
+<body>
+  <!-- Loading Screen -->
+  <div class="loading-screen" id="loadingScreen">
+    <div class="loading-content">
+      <div class="loading-heart">💕</div>
+      <h2>Loading your story...</h2>
+      <div class="loading-bar">
+        <div class="loading-progress"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- No Content Screen -->
+  <div class="no-content-screen" id="noContentScreen" style="display: none;">
+    <div class="no-content-inner">
+      <div class="no-content-icon">💝</div>
+      <h2>Coming Soon</h2>
+      <p>Your special story is being prepared...</p>
+    </div>
+  </div>
+
+  <!-- Music Toggle -->
+  <button class="music-toggle" id="musicToggle" style="display: none;">
+    <span class="music-icon" id="musicIcon">🔇</span>
+  </button>
+  <audio id="backgroundMusic" loop></audio>
+
+  <!-- Progress Bar -->
+  <div class="progress-container" id="progressContainer">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+
+  <!-- Slides Container -->
+  <div class="presentation-container" id="presentationContainer">
+    <!-- Slides will be rendered here -->
+  </div>
+
+  <!-- Navigation Hints -->
+  <div class="nav-hint" id="navHint">
+    <span class="tap-hint">Tap anywhere to continue</span>
+    <span class="key-hint">or use arrow keys →</span>
+  </div>
+
+  <!-- Confetti Canvas -->
+  <canvas id="confettiCanvas"></canvas>
+
+  <script src="/js/presentation.js"></script>
+</body>
+</html>
