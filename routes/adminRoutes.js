@@ -179,12 +179,15 @@ router.post('/upload', isAuthenticated, upload.single('image'), async (req, res)
     
     // Process image with sharp (compress and resize)
     if (req.file.mimetype.startsWith('image/')) {
+      // Auto-rotate based on EXIF orientation (important for phone photos)
+      // and resize while preserving aspect ratio for both portrait and landscape
       processedBuffer = await sharp(req.file.buffer)
-        .resize(1920, 1080, { 
-          fit: 'inside', 
+        .rotate() // Auto-rotate based on EXIF orientation
+        .resize(1920, 1920, { 
+          fit: 'inside', // Preserve aspect ratio, fit within bounds
           withoutEnlargement: true 
         })
-        .jpeg({ quality: 80 })
+        .jpeg({ quality: 85 })
         .toBuffer();
       mimeType = 'image/jpeg';
     } else {

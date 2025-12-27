@@ -22,6 +22,11 @@ app.use(cors({
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
+// Trust proxy for secure cookies on Render
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
+
 // Session configuration
 app.use(session({
   secret: process.env.SESSION_SECRET || 'bubu&dudu',
@@ -30,6 +35,7 @@ app.use(session({
   cookie: {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
 }));
@@ -74,10 +80,26 @@ app.use((req, res) => {
   res.status(404).send('Page not found');
 });
 
-// Error handler
+// Error handler - handles multer and other errors
+const multer = require('multer');
 app.use((err, req, res, next) => {
+  console.error('Error:', err.message);
+  
+  // Handle multer file size errors
+  if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ error: 'File too large. Maximum size is 12MB.' });
+    }
+    return res.status(400).json({ error: `Upload error: ${err.message}` });
+  }
+  
+  // Handle custom file filter errors
+  if (err.message === 'Only image and audio files are allowed') {
+    return res.status(400).json({ error: err.message });
+  }
+  
   console.error(err.stack);
-  res.status(500).send('Something went wrong!');
+  res.status(500).json({ error: 'Something went wrong!' });
 });
 
 app.listen(PORT, () => {

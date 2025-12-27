@@ -167,25 +167,80 @@ async function deleteSlide(id) {
 }
 
 async function uploadImage(file) {
-  const formData = new FormData();
-  formData.append('image', file);
-
-  try {
-    const response = await fetch('/api/admin/upload', {
-      method: 'POST',
-      body: formData
+  return new Promise((resolve, reject) => {
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    const xhr = new XMLHttpRequest();
+    
+    // Progress event
+    xhr.upload.addEventListener('progress', (e) => {
+      if (e.lengthComputable) {
+        const percentComplete = Math.round((e.loaded / e.total) * 100);
+        updateUploadProgress(percentComplete);
+      }
     });
+    
+    // Load complete
+    xhr.addEventListener('load', () => {
+      hideUploadProgress();
+      if (xhr.status >= 200 && xhr.status < 300) {
+        try {
+          const data = JSON.parse(xhr.responseText);
+          resolve(data.imageUrl);
+        } catch (e) {
+          showToast('Error parsing response', 'error');
+          resolve(null);
+        }
+      } else {
+        try {
+          const error = JSON.parse(xhr.responseText);
+          showToast(error.error || 'Upload failed', 'error');
+        } catch (e) {
+          showToast('Upload failed', 'error');
+        }
+        resolve(null);
+      }
+    });
+    
+    // Error event
+    xhr.addEventListener('error', () => {
+      hideUploadProgress();
+      showToast('Network error during upload', 'error');
+      resolve(null);
+    });
+    
+    // Abort event
+    xhr.addEventListener('abort', () => {
+      hideUploadProgress();
+      showToast('Upload cancelled', 'error');
+      resolve(null);
+    });
+    
+    xhr.open('POST', '/api/admin/upload');
+    xhr.send(formData);
+  });
+}
 
-    if (response.ok) {
-      const data = await response.json();
-      return data.imageUrl;
-    } else {
-      throw new Error('Upload failed');
-    }
-  } catch (error) {
-    showToast('Error uploading image', 'error');
-    return null;
+function updateUploadProgress(percent) {
+  const progressBar = document.getElementById('progressBar');
+  const progressText = document.getElementById('progressText');
+  
+  if (progressBar && progressText) {
+    progressBar.style.width = percent + '%';
+    progressText.textContent = `Uploading... ${percent}%`;
   }
+}
+
+function showUploadProgress() {
+  document.getElementById('uploadPlaceholder').style.display = 'none';
+  document.getElementById('uploadProgress').style.display = 'block';
+  document.getElementById('imagePreview').style.display = 'none';
+  updateUploadProgress(0);
+}
+
+function hideUploadProgress() {
+  document.getElementById('uploadProgress').style.display = 'none';
 }
 
 async function uploadAudio(file) {
@@ -443,15 +498,19 @@ async function processImage(file) {
     return;
   }
 
-  showToast('Uploading image...', 'success');
+  showUploadProgress();
   const imageUrl = await uploadImage(file);
   
   if (imageUrl) {
     currentImageData = imageUrl;
     document.getElementById('uploadPlaceholder').style.display = 'none';
+    document.getElementById('uploadProgress').style.display = 'none';
     document.getElementById('imagePreview').style.display = 'block';
     document.getElementById('previewImg').src = imageUrl;
     showToast('Image uploaded!', 'success');
+  } else {
+    document.getElementById('uploadPlaceholder').style.display = 'block';
+    document.getElementById('uploadProgress').style.display = 'none';
   }
 }
 
@@ -459,6 +518,7 @@ function removeImage(e) {
   e.stopPropagation();
   currentImageData = '';
   document.getElementById('uploadPlaceholder').style.display = 'block';
+  document.getElementById('uploadProgress').style.display = 'none';
   document.getElementById('imagePreview').style.display = 'none';
   document.getElementById('slideImage').value = '';
 }
