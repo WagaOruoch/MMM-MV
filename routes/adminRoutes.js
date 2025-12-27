@@ -4,7 +4,7 @@ const multer = require('multer');
 const sharp = require('sharp');
 const Slide = require('../models/Slide');
 const Settings = require('../models/Settings');
-const { isAuthenticated, verifyCredentials } = require('../middleware/auth');
+const { isAuthenticated, verifyCredentials, verifyViewerCredentials } = require('../middleware/auth');
 
 // Configure multer for memory storage
 const storage = multer.memoryStorage();
@@ -22,7 +22,7 @@ const upload = multer({
   }
 });
 
-// Login route
+// Admin Login route
 router.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -42,6 +42,30 @@ router.post('/login', async (req, res) => {
     return res.status(401).json({ error: 'Invalid credentials' });
   } catch (error) {
     console.error('Login error:', error);
+    return res.status(500).json({ error: 'Server error during login' });
+  }
+});
+
+// Viewer Login route (separate authentication for presentation)
+router.post('/viewer-login', async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    
+    if (!username || !password) {
+      return res.status(400).json({ error: 'Username and password are required' });
+    }
+    
+    const isValid = await verifyViewerCredentials(username, password);
+    
+    if (isValid) {
+      req.session.isViewer = true;
+      req.session.viewerUsername = username;
+      return res.json({ success: true, message: 'Login successful' });
+    }
+    
+    return res.status(401).json({ error: 'Invalid credentials' });
+  } catch (error) {
+    console.error('Viewer login error:', error);
     return res.status(500).json({ error: 'Server error during login' });
   }
 });

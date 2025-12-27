@@ -6,7 +6,7 @@ const path = require('path');
 const connectDB = require('./config/db');
 const adminRoutes = require('./routes/adminRoutes');
 const publicRoutes = require('./routes/publicRoutes');
-const { isAuthenticated } = require('./middleware/auth');
+const { isAuthenticated, isViewer } = require('./middleware/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -52,25 +52,37 @@ app.get('/', (req, res) => {
   res.redirect('/wrapped');
 });
 
+// Admin login page
 app.get('/login', (req, res) => {
   if (req.session && req.session.isAdmin) {
-    return res.redirect('/wrapped');
+    return res.redirect('/admin');
   }
   res.sendFile(path.join(__dirname, 'views', 'login.html'));
 });
 
+// Viewer login page
+app.get('/view-login', (req, res) => {
+  if (req.session && (req.session.isViewer || req.session.isAdmin)) {
+    return res.redirect('/wrapped');
+  }
+  res.sendFile(path.join(__dirname, 'views', 'viewer-login.html'));
+});
+
+// Admin panel (admin only)
 app.get('/admin', isAuthenticated, (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'admin.html'));
 });
 
-app.get('/wrapped', isAuthenticated, (req, res) => {
+// Presentation pages (viewer or admin)
+app.get('/wrapped', isViewer, (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'presentation.html'));
 });
 
-app.get('/experience', isAuthenticated, (req, res) => {
+app.get('/experience', isViewer, (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'presentation.html'));
 });
 
+// Preview requires admin (to preview before publishing)
 app.get('/preview', isAuthenticated, (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'presentation.html'));
 });

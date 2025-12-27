@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 
-// Middleware to check if user is authenticated
+// Middleware to check if user is admin
 const isAuthenticated = (req, res, next) => {
   if (req.session && req.session.isAdmin) {
     return next();
@@ -11,8 +11,19 @@ const isAuthenticated = (req, res, next) => {
     return res.status(401).json({ error: 'Unauthorized. Please login.' });
   }
   
-  // Redirect to login page for non-API requests
+  // Redirect to admin login page
   return res.redirect('/login');
+};
+
+// Middleware to check if user is viewer (for presentation pages)
+const isViewer = (req, res, next) => {
+  // Admins can also view
+  if (req.session && (req.session.isViewer || req.session.isAdmin)) {
+    return next();
+  }
+  
+  // Redirect to viewer login page
+  return res.redirect('/view-login');
 };
 
 // Verify admin credentials
@@ -24,12 +35,24 @@ const verifyCredentials = async (username, password) => {
     return false;
   }
   
-  // Direct comparison since we're using plain text password from env
-  // In production, you might want to hash it
   return password === adminPassword;
+};
+
+// Verify viewer credentials
+const verifyViewerCredentials = async (username, password) => {
+  const viewerUsername = process.env.VIEWER_USERNAME;
+  const viewerPassword = process.env.VIEWER_PASSWORD;
+  
+  if (username !== viewerUsername) {
+    return false;
+  }
+  
+  return password === viewerPassword;
 };
 
 module.exports = {
   isAuthenticated,
-  verifyCredentials
+  isViewer,
+  verifyCredentials,
+  verifyViewerCredentials
 };
