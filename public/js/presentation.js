@@ -5,6 +5,7 @@ let slides = [];
 let currentSlideIndex = 0;
 let settings = {};
 let isMusicPlaying = false;
+let musicStarted = false; // Track if music has been started on first interaction
 let touchStartX = 0;
 let touchEndX = 0;
 
@@ -191,6 +192,9 @@ function setupEventListeners() {
 }
 
 function handleTap(e) {
+  // Start music on first interaction (browsers require user gesture)
+  tryStartMusic();
+  
   // Visual feedback
   const slide = document.querySelector('.slide.active');
   slide.classList.add('touched');
@@ -224,6 +228,9 @@ function handleSwipe() {
   const diff = touchStartX - touchEndX;
 
   if (Math.abs(diff) > swipeThreshold) {
+    // Start music on first interaction
+    tryStartMusic();
+    
     if (diff > 0) {
       nextSlide();
     } else {
@@ -234,6 +241,9 @@ function handleSwipe() {
 }
 
 function handleKeydown(e) {
+  // Start music on first interaction
+  tryStartMusic();
+  
   switch (e.key) {
     case 'ArrowRight':
     case ' ':
@@ -309,6 +319,29 @@ function setupMusic() {
   if (settings.backgroundMusicEnabled && settings.backgroundMusicUrl) {
     musicToggle.style.display = 'flex';
     backgroundMusic.src = settings.backgroundMusicUrl;
+    
+    // Try to autoplay (will likely fail due to browser policy, but worth trying)
+    backgroundMusic.play().then(() => {
+      isMusicPlaying = true;
+      musicStarted = true;
+      musicIcon.textContent = '🔊';
+      musicToggle.classList.add('playing');
+    }).catch(() => {
+      // Autoplay blocked - will start on first user interaction
+      console.log('Autoplay blocked - music will start on first interaction');
+    });
+  }
+}
+
+// Try to start music on first user interaction
+function tryStartMusic() {
+  if (!musicStarted && settings.backgroundMusicEnabled && settings.backgroundMusicUrl) {
+    musicStarted = true;
+    backgroundMusic.play().then(() => {
+      isMusicPlaying = true;
+      musicIcon.textContent = '🔊';
+      musicToggle.classList.add('playing');
+    }).catch(console.error);
   }
 }
 
