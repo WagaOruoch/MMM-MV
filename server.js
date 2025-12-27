@@ -48,7 +48,7 @@ app.get('/', (req, res) => {
 
 app.get('/login', (req, res) => {
   if (req.session && req.session.isAdmin) {
-    return res.redirect('/admin');
+    return res.redirect('/wrapped');
   }
   res.sendFile(path.join(__dirname, 'views', 'login.html'));
 });
@@ -57,11 +57,11 @@ app.get('/admin', isAuthenticated, (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'admin.html'));
 });
 
-app.get('/wrapped', (req, res) => {
+app.get('/wrapped', isAuthenticated, (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'presentation.html'));
 });
 
-app.get('/experience', (req, res) => {
+app.get('/experience', isAuthenticated, (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'presentation.html'));
 });
 

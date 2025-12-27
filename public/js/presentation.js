@@ -6,25 +6,23 @@ let currentSlideIndex = 0;
 let settings = {};
 let isMusicPlaying = false;
 let musicStarted = false;
-let touchStartX = 0;
-let touchEndX = 0;
 let autoAdvanceTimer = null;
-let autoAdvanceDelay = 6000; // 6 seconds per slide
+let autoAdvanceDelay = 8000; // 8 seconds per slide (longer for cinematic feel)
 
-// Romantic transition types
+// Cinematic romantic transitions (matching CSS)
 const romanticTransitions = [
-  'fade-scale',    // Dreamy fade with scale
-  'slide-left',    // Classic slide
-  'slide-up',      // Rising love
-  'zoom',          // Heartbeat zoom
-  'rotate',        // Waltz rotation
-  'blur',          // Soft focus
-  'flip',          // Page turn
-  'crossfade',     // Gentle crossfade
-  'diagonal',      // Playful diagonal
-  'expand',        // Heart growing
-  'curtain',       // Reveal curtain
-  'float'          // Ascending float
+  'dreamy-zoom',    // Dreamy zoom out with blur
+  'soft-focus',     // Soft focus fade
+  'gentle-rise',    // Gentle rise with blur
+  'heartbeat',      // Heartbeat zoom
+  'dissolve',       // Romantic dissolve
+  'ethereal',       // Ethereal glow
+  'ken-burns',      // Cinematic Ken Burns
+  'warm-embrace',   // Warm embrace
+  'floating',       // Floating dream
+  'tender',         // Tender fade
+  'memory',         // Memory lane
+  'pure-love'       // Pure love
 ];
 
 let currentTransition = romanticTransitions[0];
@@ -201,19 +199,11 @@ function generateSlideHTML(slide, index, activeClass) {
 }
 
 function setupEventListeners() {
-  // Click/tap to advance
-  // Click/tap to advance (optional manual control)
-  presentationContainer.addEventListener('click', handleTap);
-  
-  // Touch events for swipe
-  presentationContainer.addEventListener('touchstart', handleTouchStart, { passive: true });
-  presentationContainer.addEventListener('touchend', handleTouchEnd, { passive: true });
-  
-  // Keyboard navigation
-  document.addEventListener('keydown', handleKeydown);
-  
-  // Music toggle
+  // Only music toggle - no tap/swipe navigation (fully automatic)
   musicToggle.addEventListener('click', handleMusicToggleClick);
+  
+  // Click anywhere to start music (browser requirement)
+  presentationContainer.addEventListener('click', tryStartMusic, { once: true });
   
   // Hide nav hint after a few seconds
   setTimeout(() => {
@@ -223,76 +213,8 @@ function setupEventListeners() {
 }
 
 function handleMusicToggleClick(e) {
-  e.stopPropagation(); // Don't trigger slide advance
+  e.stopPropagation();
   toggleMusic();
-}
-
-function handleTap(e) {
-  // Start music on first interaction (browsers require user gesture)
-  tryStartMusic();
-  
-  // Visual feedback
-  const slide = document.querySelector('.slide.active');
-  slide.classList.add('touched');
-  setTimeout(() => slide.classList.remove('touched'), 300);
-
-  // Determine direction based on tap position
-  const tapX = e.clientX;
-  const screenWidth = window.innerWidth;
-  
-  if (tapX < screenWidth * 0.3) {
-    prevSlide();
-    resetAutoAdvance();
-  } else {
-    nextSlide();
-    resetAutoAdvance();
-  }
-}
-
-function handleTouchStart(e) {
-  touchStartX = e.changedTouches[0].screenX;
-}
-
-function handleTouchEnd(e) {
-  touchEndX = e.changedTouches[0].screenX;
-  handleSwipe();
-}
-
-function handleSwipe() {
-  const swipeThreshold = 50;
-  const diff = touchStartX - touchEndX;
-
-  if (Math.abs(diff) > swipeThreshold) {
-    // Start music on first interaction
-    tryStartMusic();
-    
-    if (diff > 0) {
-      nextSlide();
-      resetAutoAdvance();
-    } else {
-      prevSlide();
-      resetAutoAdvance();
-    }
-  }
-}
-
-function handleKeydown(e) {
-  // Start music on first interaction
-  tryStartMusic();
-  
-  switch (e.key) {
-    case 'ArrowRight':
-    case ' ':
-      e.preventDefault();
-      nextSlide();
-      resetAutoAdvance();
-      break;
-    case 'ArrowLeft':
-      e.preventDefault();
-      prevSlide();
-      resetAutoAdvance();
-      break;
-  }
 }
 
 function nextSlide() {
